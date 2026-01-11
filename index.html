@@ -1,211 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PISPY</title>
-    
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PISPY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 
-    <style>
-        :root {
-            --bg-dark: #1e1e1e;
-            --bg-panel: #2d2d2d;
-            --accent: #007acc;
-            --text: #ffffff;
-            --border: #3e3e3e;
-        }
-        
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+  <style>
+    :root {
+      --bg-dark: #141415d0;
+      --bg-panel: #000000;
+      --accent: #007acc;
+      --text: #ffffff;
+      --border: #3e3e3e;
+    }
 
-        /* Header */
-        header {
-            background: #181818;
-            padding: 10px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    body {
+      margin: 0;
+      font-family: 'Lexend', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        .mode-switch button {
-            background: var(--bg-panel);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
+    /* Header */
+    header {
+      background: #181818;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .mode-switch button.active {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
+    .mode-switch button {
+      background: var(--bg-panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
 
-        /* Main Layout */
-        main {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-        }
+    .mode-switch button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      border-radius: 20px;
+    }
 
-        .editor-container {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border);
-        }
+    .mode-switch button.active:hover {
+      background: #005a9e;
+      border-color: #005a9e;
+      box-shadow: #ffffff 0px 0px 8px;
 
-        .preview-container {
-            width: 50%;
-            background: white;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
+    }
 
-        /* Editors */
-        .editor-box {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
+    .mode-switch button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      border-radius: 20px;
+    }
 
-        .editor-header {
-            background: #252526;
-            padding: 5px 10px;
-            font-size: 0.85rem;
-            color: #ccc;
-            border-bottom: 1px solid var(--border);
-            border-top: 1px solid var(--border);
-        }
+    .mode-switch button.active:hover {
+      background: #005a9e;
+      border-color: #005a9e;
+      box-shadow: #ffffff 0px 0px 8px;
 
-        textarea {
-            flex: 1;
-            background-color: var(--bg-dark);
-            color: #d4d4d4;
-            border: none;
-            padding: 10px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 14px;
-            resize: none;
-            outline: none;
-        }
+    }
 
-        /* Web Mode Specifics */
-        #web-editors { display: flex; flex-direction: column; height: 100%; }
-        
-        /* Python Mode Specifics */
-        #python-editor-container { display: none; height: 100%; flex-direction: column; }
-        
-        #run-btn {
-            background: #2ea043;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px;
-        }
+    /* Main Layout */
+    main {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+    }
 
-        /* Preview Areas */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
-        }
+    .editor-container {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
 
-        #python-preview {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            background: #f0f0f0;
-            padding: 10px;
-            box-sizing: border-box;
-            overflow: auto;
-        }
+    .preview-container {
+      width: 50%;
+      background: white;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-        #console-output {
-            background: #000;
-            color: #0f0;
-            font-family: monospace;
-            padding: 10px;
-            height: 150px;
-            overflow-y: auto;
-            border-radius: 4px;
-            margin-top: 10px;
-            white-space: pre-wrap;
-        }
+    /* Editors */
+    .editor-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
 
-        canvas {
-            background: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            align-self: center;
-        }
+    .editor-header {
+      background: #252526;
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      color: #ccc;
+      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+    }
 
-        .loading-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #eebb00;
-            color: black;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            display: none;
-        }
-    </style>
+    textarea {
+      flex: 1;
+      background-color: var(--bg-dark);
+      color: #d4d4d4;
+      border: none;
+      padding: 10px;
+      font-family: 'Lexend', monospace;
+      font-size: 14px;
+      resize: none;
+      outline: none;
+    }
+
+    /* Web Mode Specifics */
+    #web-editors {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Python Mode Specifics */
+    #python-editor-container {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+    }
+
+    #run-btn {
+      background: #2ea043;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+    }
+
+    /* Preview Areas */
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    #python-preview {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #f0f0f0;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #console-output {
+      background: #000;
+      color: #0f0;
+      font-family: Lexend;
+      padding: 10px;
+      height: 150px;
+      overflow-y: auto;
+      border-radius: 4px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+
+    canvas {
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      align-self: center;
+    }
+
+    .loading-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #eebb00;
+      color: black;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-    <h3>Code Playground</h3>
+  <header>
+    <h3>PISPY</h3>
     <div class="mode-switch">
-        <button id="btn-web" class="active" onclick="switchMode('web')">HTML / CSS / JS</button>
-        <button id="btn-python" onclick="switchMode('python')">Python (Canvas)</button>
+      <button id="btn-web" class="active" onclick="switchMode('web')">HTML / CSS / JS</button>
+      <button id="btn-python" onclick="switchMode('python')">Python (Canvas)</button>
     </div>
-</header>
+  </header>
 
-<main>
+  <main>
     <div class="editor-container">
-        
-        <div id="web-editors">
-            <div class="editor-box">
-                <div class="editor-header">HTML</div>
-                <textarea id="html-code" oninput="updateWebPreview()"><h1>Hello World</h1>
+
+      <div id="web-editors">
+        <div class="editor-box">
+          <div class="editor-header">HTML</div>
+          <textarea id="html-code" oninput="updateWebPreview()"><h1>Hello World</h1>
 <button onclick="draw()">Click me</button></textarea>
-            </div>
-            <div class="editor-box">
-                <div class="editor-header">CSS</div>
-                <textarea id="css-code" oninput="updateWebPreview()">body { font-family: sans-serif; padding: 20px; }
+        </div>
+        <div class="editor-box">
+          <div class="editor-header">CSS</div>
+          <textarea id="css-code" oninput="updateWebPreview()">body { font-family: sans-serif; padding: 20px; }
 h1 { color: #333; }</textarea>
-            </div>
-            <div class="editor-box">
-                <div class="editor-header">JS</div>
-                <textarea id="js-code" oninput="updateWebPreview()">function draw() {
+        </div>
+        <div class="editor-box">
+          <div class="editor-header">JS</div>
+          <textarea id="js-code" oninput="updateWebPreview()">function draw() {
   alert("It works!");
 }</textarea>
-            </div>
         </div>
+      </div>
 
-        <div id="python-editor-container">
-            <div class="editor-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Python Code</span>
-                <button id="run-btn" onclick="runPython()">Run Code ▶</button>
-            </div>
-            <textarea id="python-code">
+      <div id="python-editor-container">
+        <div class="editor-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Python Code</span>
+          <button id="run-btn" onclick="runPython()">Run Code ▶</button>
+        </div>
+        <textarea id="python-code">
 import js
 
 # Get the canvas element from the DOM
@@ -227,64 +260,64 @@ ctx.fill()
 
 print("Canvas drawing complete!")
             </textarea>
-        </div>
+      </div>
     </div>
 
     <div class="preview-container">
-        <iframe id="web-frame"></iframe>
+      <iframe id="web-frame"></iframe>
 
-        <div id="python-preview">
-            <div id="loading" class="loading-badge">Loading Python Engine...</div>
-            <h4>Canvas Output</h4>
-            <canvas id="py-canvas" width="400" height="300"></canvas>
-            
-            <h4>Console Output</h4>
-            <div id="console-output">Ready to run...</div>
-        </div>
+      <div id="python-preview">
+        <div id="loading" class="loading-badge">Loading Python Engine...</div>
+        <h4>Canvas Output</h4>
+        <canvas id="py-canvas" width="400" height="300"></canvas>
+
+        <h4>Console Output</h4>
+        <div id="console-output">Ready to run...</div>
+      </div>
     </div>
-</main>
+  </main>
 
-<script>
+  <script>
     // --- MODE SWITCHING ---
     function switchMode(mode) {
-        const webEditors = document.getElementById('web-editors');
-        const pyEditor = document.getElementById('python-editor-container');
-        const webFrame = document.getElementById('web-frame');
-        const pyPreview = document.getElementById('python-preview');
-        const btnWeb = document.getElementById('btn-web');
-        const btnPy = document.getElementById('btn-python');
+      const webEditors = document.getElementById('web-editors');
+      const pyEditor = document.getElementById('python-editor-container');
+      const webFrame = document.getElementById('web-frame');
+      const pyPreview = document.getElementById('python-preview');
+      const btnWeb = document.getElementById('btn-web');
+      const btnPy = document.getElementById('btn-python');
 
-        if (mode === 'web') {
-            webEditors.style.display = 'flex';
-            pyEditor.style.display = 'none';
-            webFrame.style.display = 'block';
-            pyPreview.style.display = 'none';
-            btnWeb.classList.add('active');
-            btnPy.classList.remove('active');
-            updateWebPreview(); // Refresh web view
-        } else {
-            webEditors.style.display = 'none';
-            pyEditor.style.display = 'flex';
-            webFrame.style.display = 'none';
-            pyPreview.style.display = 'flex';
-            btnWeb.classList.remove('active');
-            btnPy.classList.add('active');
-            initPyodide(); // Load Python if not loaded
-        }
+      if (mode === 'web') {
+        webEditors.style.display = 'flex';
+        pyEditor.style.display = 'none';
+        webFrame.style.display = 'block';
+        pyPreview.style.display = 'none';
+        btnWeb.classList.add('active');
+        btnPy.classList.remove('active');
+        updateWebPreview(); // Refresh web view
+      } else {
+        webEditors.style.display = 'none';
+        pyEditor.style.display = 'flex';
+        webFrame.style.display = 'none';
+        pyPreview.style.display = 'flex';
+        btnWeb.classList.remove('active');
+        btnPy.classList.add('active');
+        initPyodide(); // Load Python if not loaded
+      }
     }
 
     // --- WEB COMPILER LOGIC ---
     function updateWebPreview() {
-        const html = document.getElementById('html-code').value;
-        const css = `<style>${document.getElementById('css-code').value}</style>`;
-        const js = `<script>${document.getElementById('js-code').value}<\/script>`;
-        
-        const frame = document.getElementById('web-frame');
-        const doc = frame.contentDocument || frame.contentWindow.document;
-        
-        doc.open();
-        doc.write(html + css + js);
-        doc.close();
+      const html = document.getElementById('html-code').value;
+      const css = `<style>${document.getElementById('css-code').value}</style>`;
+      const js = `<script>${document.getElementById('js-code').value}<\/script>`;
+
+      const frame = document.getElementById('web-frame');
+      const doc = frame.contentDocument || frame.contentWindow.document;
+
+      doc.open();
+      doc.write(html + css + js);
+      doc.close();
     }
 
     // --- PYTHON COMPILER LOGIC (Pyodide) ---
@@ -293,49 +326,50 @@ print("Canvas drawing complete!")
     const loadingBadge = document.getElementById('loading');
 
     async function initPyodide() {
-        if (pyodide) return; // Already loaded
+      if (pyodide) return; // Already loaded
 
-        loadingBadge.style.display = 'block';
-        outputDiv.innerText = "Initializing Python environment...\n";
+      loadingBadge.style.display = 'block';
+      outputDiv.innerText = "Initializing Python environment...\n";
 
-        try {
-            pyodide = await loadPyodide();
-            
-            // Redirect Python print() to our HTML console div
-            pyodide.setStdout({
-                batched: (msg) => {
-                    outputDiv.innerText += msg + "\n";
-                    outputDiv.scrollTop = outputDiv.scrollHeight;
-                }
-            });
+      try {
+        pyodide = await loadPyodide();
 
-            outputDiv.innerText += "Python Loaded! Click 'Run Code'.\n";
-        } catch (err) {
-            outputDiv.innerText += "Error loading Python: " + err;
-        } finally {
-            loadingBadge.style.display = 'none';
-        }
+        // Redirect Python print() to our HTML console div
+        pyodide.setStdout({
+          batched: (msg) => {
+            outputDiv.innerText += msg + "\n";
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+          }
+        });
+
+        outputDiv.innerText += "Python Loaded! Click 'Run Code'.\n";
+      } catch (err) {
+        outputDiv.innerText += "Error loading Python: " + err;
+      } finally {
+        loadingBadge.style.display = 'none';
+      }
     }
 
     async function runPython() {
-        if (!pyodide) {
-            alert("Python is still loading, please wait...");
-            return;
-        }
+      if (!pyodide) {
+        alert("Python is still loading, please wait...");
+        return;
+      }
 
-        const code = document.getElementById('python-code').value;
-        outputDiv.innerText = ">>> Running...\n";
+      const code = document.getElementById('python-code').value;
+      outputDiv.innerText = ">>> Running...\n";
 
-        try {
-            await pyodide.runPythonAsync(code);
-        } catch (err) {
-            outputDiv.innerText += "Error: " + err;
-        }
+      try {
+        await pyodide.runPythonAsync(code);
+      } catch (err) {
+        outputDiv.innerText += "Error: " + err;
+      }
     }
 
     // Initialize default view
     updateWebPreview();
-</script>
+  </script>
 
 </body>
-</html>      
+
+</html>
