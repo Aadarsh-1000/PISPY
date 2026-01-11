@@ -1,93 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PISPY</title>
-    <link rel="stylesheet" href="index.css">
-    <script src="index.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PISPY</title>
 
-    
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <link rel="stylesheet" href="index.css">
 
- 
+  <!-- Pyodide -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 </head>
 <body>
 
 <header>
-    <h3>Code Playground</h3>
-    <div class="mode-switch">
-        <button id="btn-web" class="active" onclick="switchMode('web')">HTML / CSS / JS</button>
-        <button id="btn-python" onclick="switchMode('python')">Python (Canvas)</button>
-    </div>
+  <h3>Code Playground</h3>
+  <div class="mode-switch">
+    <button id="btn-web" class="active">HTML / CSS / JS</button>
+    <button id="btn-python">Python (Canvas)</button>
+  </div>
 </header>
 
 <main>
-    <div class="editor-container">
-        
-        <div id="web-editors">
-            <div class="editor-box">
-                <div class="editor-header">HTML</div>
-                <textarea id="html-code" oninput="updateWebPreview()"><h1>Hello World</h1>
+  <div class="editor-container">
+
+    <div id="web-editors">
+      <div class="editor-box">
+        <div class="editor-header">HTML</div>
+        <textarea id="html-code"><h1>Hello World</h1>
 <button onclick="draw()">Click me</button></textarea>
-            </div>
-            <div class="editor-box">
-                <div class="editor-header">CSS</div>
-                <textarea id="css-code" oninput="updateWebPreview()">body { font-family: sans-serif; padding: 20px; }
+      </div>
+
+      <div class="editor-box">
+        <div class="editor-header">CSS</div>
+        <textarea id="css-code">body { font-family: sans-serif; padding: 20px; }
 h1 { color: #333; }</textarea>
-            </div>
-            <div class="editor-box">
-                <div class="editor-header">JS</div>
-                <textarea id="js-code" oninput="updateWebPreview()">function draw() {
+      </div>
+
+      <div class="editor-box">
+        <div class="editor-header">JS</div>
+        <textarea id="js-code">function draw() {
   alert("It works!");
 }</textarea>
-            </div>
-        </div>
+      </div>
+    </div>
 
-        <div id="python-editor-container">
-            <div class="editor-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Python Code</span>
-                <button id="run-btn" onclick="runPython()">Run Code ▶</button>
-            </div>
-            <textarea id="python-code">
+    <div id="python-editor-container">
+      <div class="editor-header row">
+        <span>Python Code</span>
+        <button id="run-btn">Run ▶</button>
+      </div>
+      <textarea id="python-code">
 import js
 
-# Get the canvas element from the DOM
-canvas = js.document.getElementById('py-canvas')
-ctx = canvas.getContext('2d')
+canvas = js.document.getElementById("py-canvas")
+ctx = canvas.getContext("2d")
 
-# Clear canvas
 ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-# Draw a blue rectangle
-ctx.fillStyle = 'blue'
+ctx.fillStyle = "blue"
 ctx.fillRect(50, 50, 100, 100)
 
-# Draw a red circle
-ctx.beginPath()
-ctx.arc(200, 100, 40, 0, 6.28)
-ctx.fillStyle = 'red'
-ctx.fill()
-
 print("Canvas drawing complete!")
-            </textarea>
-        </div>
+      </textarea>
     </div>
+  </div>
 
-    <div class="preview-container">
-        <iframe id="web-frame"></iframe>
+  <div class="preview-container">
+    <iframe id="web-frame"></iframe>
 
-        <div id="python-preview">
-            <div id="loading" class="loading-badge">Loading Python Engine...</div>
-            <h4>Canvas Output</h4>
-            <canvas id="py-canvas" width="400" height="300"></canvas>
-            
-            <h4>Console Output</h4>
-            <div id="console-output">Ready to run...</div>
-        </div>
+    <div id="python-preview">
+      <div id="loading" class="loading-badge">Loading Python...</div>
+      <canvas id="py-canvas" width="400" height="300"></canvas>
+      <div id="console-output">Ready.</div>
     </div>
+  </div>
 </main>
 
-
+<!-- IMPORTANT: JS at bottom -->
+<script src="index.js"></script>
 </body>
-</html>      
+</html>

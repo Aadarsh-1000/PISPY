@@ -1,90 +1,60 @@
-// --- MODE SWITCHING ---
-    function switchMode(mode) {
-        const webEditors = document.getElementById('web-editors');
-        const pyEditor = document.getElementById('python-editor-container');
-        const webFrame = document.getElementById('web-frame');
-        const pyPreview = document.getElementById('python-preview');
-        const btnWeb = document.getElementById('btn-web');
-        const btnPy = document.getElementById('btn-python');
+let pyodide = null;
 
-        if (mode === 'web') {
-            webEditors.style.display = 'flex';
-            pyEditor.style.display = 'none';
-            webFrame.style.display = 'block';
-            pyPreview.style.display = 'none';
-            btnWeb.classList.add('active');
-            btnPy.classList.remove('active');
-            updateWebPreview(); // Refresh web view
-        } else {
-            webEditors.style.display = 'none';
-            pyEditor.style.display = 'flex';
-            webFrame.style.display = 'none';
-            pyPreview.style.display = 'flex';
-            btnWeb.classList.remove('active');
-            btnPy.classList.add('active');
-            initPyodide(); // Load Python if not loaded
-        }
-    }
+const webEditors = document.getElementById("web-editors");
+const pyEditor = document.getElementById("python-editor-container");
+const webFrame = document.getElementById("web-frame");
+const pyPreview = document.getElementById("python-preview");
+const btnWeb = document.getElementById("btn-web");
+const btnPy = document.getElementById("btn-python");
+const output = document.getElementById("console-output");
+const loading = document.getElementById("loading");
 
-    // --- WEB COMPILER LOGIC ---
-    function updateWebPreview() {
-        const html = document.getElementById('html-code').value;
-        const css = `<style>${document.getElementById('css-code').value}</style>`;
-        const js = `<script>${document.getElementById('js-code').value}<\/script>`;
-        
-        const frame = document.getElementById('web-frame');
-        const doc = frame.contentDocument || frame.contentWindow.document;
-        
-        doc.open();
-        doc.write(html + css + js);
-        doc.close();
-    }
+btnWeb.onclick = () => switchMode("web");
+btnPy.onclick = () => switchMode("python");
 
-    // --- PYTHON COMPILER LOGIC (Pyodide) ---
-    let pyodide = null;
-    const outputDiv = document.getElementById('console-output');
-    const loadingBadge = document.getElementById('loading');
+function switchMode(mode) {
+  const web = mode === "web";
 
-    async function initPyodide() {
-        if (pyodide) return; // Already loaded
+  webEditors.style.display = web ? "flex" : "none";
+  pyEditor.style.display = web ? "none" : "flex";
+  webFrame.style.display = web ? "block" : "none";
+  pyPreview.style.display = web ? "none" : "block";
 
-        loadingBadge.style.display = 'block';
-        outputDiv.innerText = "Initializing Python environment...\n";
+  btnWeb.classList.toggle("active", web);
+  btnPy.classList.toggle("active", !web);
 
-        try {
-            pyodide = await loadPyodide();
-            
-            // Redirect Python print() to our HTML console div
-            pyodide.setStdout({
-                batched: (msg) => {
-                    outputDiv.innerText += msg + "\n";
-                    outputDiv.scrollTop = outputDiv.scrollHeight;
-                }
-            });
+  if (web) updateWebPreview();
+  else initPyodide();
+}
 
-            outputDiv.innerText += "Python Loaded! Click 'Run Code'.\n";
-        } catch (err) {
-            outputDiv.innerText += "Error loading Python: " + err;
-        } finally {
-            loadingBadge.style.display = 'none';
-        }
-    }
+function updateWebPreview() {
+  const html = htmlCode.value;
+  const css = `<style>${cssCode.value}</style>`;
+  const js = `<script>${jsCode.value}<\/script>`;
 
-    async function runPython() {
-        if (!pyodide) {
-            alert("Python is still loading, please wait...");
-            return;
-        }
+  const doc = webFrame.contentDocument;
+  doc.open();
+  doc.write(html + css + js);
+  doc.close();
+}
 
-        const code = document.getElementById('python-code').value;
-        outputDiv.innerText = ">>> Running...\n";
+async function initPyodide() {
+  if (pyodide) return;
 
-        try {
-            await pyodide.runPythonAsync(code);
-        } catch (err) {
-            outputDiv.innerText += "Error: " + err;
-        }
-    }
+  loading.style.display = "block";
+  pyodide = await loadPyodide();
 
-    // Initialize default view
-    updateWebPreview();
+  pyodide.setStdout({
+    batched: msg => output.textContent += msg + "\n"
+  });
+
+  loading.style.display = "none";
+}
+
+runBtn.onclick = async () => {
+  output.textContent = "Running...\n";
+  await pyodide.runPythonAsync(pythonCode.value);
+};
+
+// INIT
+updateWebPreview();
