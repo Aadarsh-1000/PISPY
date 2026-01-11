@@ -40,11 +40,12 @@
 
     .mode-switch button {
       background: var(--bg-panel);
+
       color: var(--text);
       border: 1px solid var(--border);
       padding: 8px 16px;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 20px;
     }
 
     .mode-switch button.active {
@@ -53,24 +54,17 @@
       border-radius: 20px;
     }
 
-    .mode-switch button.active:hover {
-      background: #005a9e;
-      border-color: #005a9e;
-      box-shadow: #ffffff 0px 0px 8px;
-
-    }
-
+  
     .mode-switch button.active {
       background: var(--accent);
       border-color: var(--accent);
       border-radius: 20px;
     }
 
-    .mode-switch button.active:hover {
+    .mode-switch button.active:hover {   
       background: #005a9e;
       border-color: #005a9e;
-      box-shadow: #ffffff 0px 0px 8px;
-
+      
     }
 
     /* Main Layout */
@@ -217,17 +211,17 @@
       <div id="web-editors">
         <div class="editor-box">
           <div class="editor-header">HTML</div>
-          <textarea id="html-code" oninput="updateWebPreview()"><h1>Hello World</h1>
+          <textarea id="html-code" oninput="updateWebPreview(); saveCode()"><h1>Hello World</h1>
 <button onclick="draw()">Click me</button></textarea>
         </div>
         <div class="editor-box">
           <div class="editor-header">CSS</div>
-          <textarea id="css-code" oninput="updateWebPreview()">body { font-family: sans-serif; padding: 20px; }
+          <textarea id="css-code" oninput="updateWebPreview(); saveCode()">body { font-family: sans-serif; padding: 20px; }
 h1 { color: #333; }</textarea>
         </div>
         <div class="editor-box">
           <div class="editor-header">JS</div>
-          <textarea id="js-code" oninput="updateWebPreview()">function draw() {
+          <textarea id="js-code" oninput="updateWebPreview(); saveCode()">function draw() {
   alert("It works!");
 }</textarea>
         </div>
@@ -238,7 +232,7 @@ h1 { color: #333; }</textarea>
           <span>Python Code</span>
           <button id="run-btn" onclick="runPython()">Run Code ▶</button>
         </div>
-        <textarea id="python-code">
+        <textarea id="python-code" oninput="saveCode()">
 import js
 
 # Get the canvas element from the DOM
@@ -278,6 +272,26 @@ print("Canvas drawing complete!")
   </main>
 
   <script>
+    // --- LOCALSTORAGE ---
+    function saveCode() {
+      localStorage.setItem('html-code', document.getElementById('html-code').value);
+      localStorage.setItem('css-code', document.getElementById('css-code').value);
+      localStorage.setItem('js-code', document.getElementById('js-code').value);
+      localStorage.setItem('python-code', document.getElementById('python-code').value);
+    }
+
+    function loadCode() {
+      const htmlStored = localStorage.getItem('html-code');
+      const cssStored = localStorage.getItem('css-code');
+      const jsStored = localStorage.getItem('js-code');
+      const pythonStored = localStorage.getItem('python-code');
+
+      if (htmlStored) document.getElementById('html-code').value = htmlStored;
+      if (cssStored) document.getElementById('css-code').value = cssStored;
+      if (jsStored) document.getElementById('js-code').value = jsStored;
+      if (pythonStored) document.getElementById('python-code').value = pythonStored;
+    }
+
     // --- MODE SWITCHING ---
     function switchMode(mode) {
       const webEditors = document.getElementById('web-editors');
@@ -367,6 +381,7 @@ print("Canvas drawing complete!")
     }
 
     // Initialize default view
+    loadCode();
     updateWebPreview();
   </script>
 
