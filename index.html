@@ -1,27 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PISPY</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>PISPY - Multi-Language IDE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-
+</head>
+<body>
   <style>
     :root {
-      --bg-dark: #141415d0;
-      --bg-panel: #000000;
-      --accent: #007acc;
-      --text: #ffffff;
-      --border: #3e3e3e;
+      --vs-bg-primary: #1e1e1e;
+      --vs-bg-secondary: #252526;
+      --vs-bg-tertiary: #2d2d30;
+      --vs-text: #e0e0e0;
+      --vs-text-dim: #858585;
+      --vs-accent: #007acc;
+      --vs-accent-hover: #005a9e;
+      --vs-border: #3e3e42;
+      --vs-green: #6a9955;
+      --vs-blue: #569cd6;
+      --vs-red: #f48771;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: 'Lexend', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text);
+      font-family: 'Fira Code', monospace;
+      background-color: var(--vs-bg-primary);
+      color: var(--vs-text);
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -30,121 +40,255 @@
 
     /* Header */
     header {
-      background: #181818;
+      background: var(--vs-bg-secondary);
       padding: 10px 20px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--vs-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      height: 50px;
+    }
+
+    header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .mode-switch {
+      display: flex;
+      gap: 10px;
     }
 
     .mode-switch button {
-      background: var(--bg-panel);
-
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
+      background: transparent;
+      color: var(--vs-text-dim);
+      border: none;
+      padding: 8px 14px;
       cursor: pointer;
-      border-radius: 20px;
+      border-radius: 4px;
+      transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .mode-switch button:hover {
+      background: var(--vs-bg-tertiary);
+      color: var(--vs-text);
     }
 
     .mode-switch button.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      border-radius: 20px;
-    }
-
-  
-    .mode-switch button.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      border-radius: 20px;
-    }
-
-    .mode-switch button.active:hover {   
-      background: #005a9e;
-      border-color: #005a9e;
-      
+      background: linear-gradient(180deg, var(--vs-accent), var(--vs-accent-hover));
+      color: #fff;
+      border: 1px solid rgba(0, 122, 204, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
+      transform: translateY(-1px);
     }
 
     /* Main Layout */
     main {
       display: flex;
       flex: 1;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 50px);
     }
 
-    .editor-container {
-      width: 50%;
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: var(--vs-bg-secondary);
+      border-right: 1px solid var(--vs-border);
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border);
+      overflow-y: auto;
     }
 
-    .preview-container {
-      width: 50%;
-      background: white;
+    .sidebar-section {
+      padding: 15px;
+      border-bottom: 1px solid var(--vs-border);
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--vs-text-dim);
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .file-item {
+      padding: 8px 10px;
+      margin: 2px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 100ms ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--vs-text-dim);
+    }
+
+    .file-item:hover {
+      background: var(--vs-bg-tertiary);
+      color: var(--vs-text);
+    }
+
+    .file-item.active {
+      background: var(--vs-accent);
+      color: #fff;
+    }
+
+    /* Editor Container */
+    .editor-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Tabs */
+    .editor-tabs {
+      display: flex;
+      background: var(--vs-bg-secondary);
+      border-bottom: 1px solid var(--vs-border);
+      overflow-x: auto;
+      gap: 4px;
+      padding: 0 10px;
+    }
+
+    .editor-tab {
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--vs-text-dim);
+      cursor: pointer;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 150ms ease, border-color 150ms ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .editor-tab:hover {
+      color: var(--vs-text);
+    }
+
+    .editor-tab.active {
+      color: var(--vs-text);
+      border-bottom-color: var(--vs-accent);
+    }
+
+    /* Editor Area */
+    .editor-area {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .editor-content {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .editor-content.active {
+      display: flex;
+    }
+
+    textarea {
+      flex: 1;
+      background-color: var(--vs-bg-primary);
+      color: var(--vs-text);
+      border: none;
+      padding: 15px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    textarea::placeholder {
+      color: var(--vs-text-dim);
+    }
+
+    /* Autocomplete */
+    .editor-wrapper {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    /* Editors */
-    .editor-box {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
     }
 
-    .editor-header {
-      background: #252526;
-      padding: 5px 10px;
-      font-size: 0.85rem;
-      color: #ccc;
-      border-bottom: 1px solid var(--border);
-      border-top: 1px solid var(--border);
+    .autocomplete-menu {
+      position: fixed;
+      background: var(--vs-bg-tertiary);
+      border: 1px solid var(--vs-accent);
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+      max-height: 250px;
+      overflow-y: auto;
+      min-width: 220px;
+      z-index: 10000;
+      display: none;
+      padding: 4px 0;
     }
 
-    textarea {
-      flex: 1;
-      background-color: var(--bg-dark);
-      color: #d4d4d4;
-      border: none;
-      padding: 10px;
-      font-family: 'Lexend', monospace;
-      font-size: 14px;
-      resize: none;
-      outline: none;
+    .autocomplete-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 80ms ease;
+      color: var(--vs-text);
+      user-select: none;
     }
 
-    /* Web Mode Specifics */
-    #web-editors {
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: var(--vs-accent);
+      color: white;
+    }
+
+    .autocomplete-label {
+      font-size: 10px;
+      color: var(--vs-text-dim);
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+
+    /* Preview Pane */
+    .preview-pane {
+      width: 45%;
+      background: #fff;
+      border-left: 1px solid var(--vs-border);
       display: flex;
       flex-direction: column;
-      height: 100%;
+      overflow: hidden;
     }
 
-    /* Python Mode Specifics */
-    #python-editor-container {
-      display: none;
-      height: 100%;
-      flex-direction: column;
+    .preview-header {
+      background: var(--vs-bg-secondary);
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--vs-border);
+      font-size: 12px;
+      color: var(--vs-text-dim);
+      font-weight: 600;
     }
 
-    #run-btn {
-      background: #2ea043;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      cursor: pointer;
-      font-weight: bold;
-      margin: 5px;
+    .preview-content {
+      flex: 1;
+      overflow: auto;
+      position: relative;
     }
 
-    /* Preview Areas */
     iframe {
       width: 100%;
       height: 100%;
@@ -153,32 +297,67 @@
     }
 
     #python-preview {
-      display: none;
+      background: var(--vs-bg-primary);
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
       flex-direction: column;
-      height: 100%;
-      background: #f0f0f0;
-      padding: 10px;
-      box-sizing: border-box;
-      overflow: auto;
+    }
+
+    #python-preview h4 {
+      margin: 0 0 8px 0;
+      color: var(--vs-text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    canvas {
+      background: #222;
+      border: 1px solid var(--vs-border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 15px;
     }
 
     #console-output {
       background: #000;
       color: #0f0;
-      font-family: Lexend;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
       padding: 10px;
-      height: 150px;
+      height: 120px;
       overflow-y: auto;
       border-radius: 4px;
-      margin-top: 10px;
+      border: 1px solid var(--vs-border);
       white-space: pre-wrap;
+      line-height: 1.4;
     }
 
-    canvas {
-      background: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      align-self: center;
+    .action-bar {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--vs-border);
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-run {
+      background: var(--vs-green);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background-color 150ms ease;
+    }
+
+    .btn-run:hover {
+      background: #7cab66;
     }
 
     .loading-badge {
@@ -189,8 +368,9 @@
       color: black;
       padding: 5px 10px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
       display: none;
+      z-index: 10;
     }
   </style>
 </head>
@@ -200,40 +380,99 @@
   <header>
     <h3>PISPY</h3>
     <div class="mode-switch">
-      <button id="btn-web" class="active" onclick="switchMode('web')">HTML / CSS / JS</button>
-      <button id="btn-python" onclick="switchMode('python')">Python (Canvas)</button>
+      <button id="btn-editor" class="active" onclick="switchMode('editor')">Editor</button>
+      <button id="btn-python" onclick="switchMode('python')">Canvas</button>
     </div>
   </header>
 
   <main>
-    <div class="editor-container">
-
-      <div id="web-editors">
-        <div class="editor-box">
-          <div class="editor-header">HTML</div>
-          <textarea id="html-code" oninput="updateWebPreview(); saveCode()"><h1>Hello World</h1>
-<button onclick="draw()">Click me</button></textarea>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Languages</div>
+        <div class="file-item active" onclick="switchLanguage('html')" data-lang="html">
+          <span>HTML</span>
         </div>
-        <div class="editor-box">
-          <div class="editor-header">CSS</div>
-          <textarea id="css-code" oninput="updateWebPreview(); saveCode()">body { font-family: sans-serif; padding: 20px; }
-h1 { color: #333; }</textarea>
+        <div class="file-item" onclick="switchLanguage('css')" data-lang="css">
+          <span>CSS</span>
         </div>
-        <div class="editor-box">
-          <div class="editor-header">JS</div>
-          <textarea id="js-code" oninput="updateWebPreview(); saveCode()">function draw() {
-  alert("It works!");
-}</textarea>
+        <div class="file-item" onclick="switchLanguage('js')" data-lang="js">
+          <span>JavaScript</span>
+        </div>
+        <div class="file-item" onclick="switchLanguage('python')" data-lang="python">
+          <span>Python</span>
+        </div>
+        <div class="file-item" onclick="switchLanguage('sql')" data-lang="sql">
+          <span>SQL</span>
         </div>
       </div>
+    </div>
 
-      <div id="python-editor-container">
-        <div class="editor-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <span>Python Code</span>
-          <button id="run-btn" onclick="runPython()">Run Code ▶</button>
+    <!-- Editor Main -->
+    <div class="editor-main">
+      <div class="editor-tabs" id="editor-tabs">
+        <button class="editor-tab active" onclick="switchLanguage('html')" data-lang="html">
+          index.html
+        </button>
+        <button class="editor-tab" onclick="switchLanguage('css')" data-lang="css">
+          styles.css
+        </button>
+        <button class="editor-tab" onclick="switchLanguage('js')" data-lang="js">
+          script.js
+        </button>
+        <button class="editor-tab" onclick="switchLanguage('python')" data-lang="python">
+          code.py
+        </button>
+        <button class="editor-tab" onclick="switchLanguage('sql')" data-lang="sql">
+          query.sql
+        </button>
+      </div>
+
+      <div class="editor-area">
+        <div class="editor-content active" data-lang="html">
+          <div class="editor-wrapper">
+            <textarea id="html-code" oninput="updateWebPreview(); saveCode()"><h1>Hello World</h1>
+<button onclick="draw()">Click me</button></textarea>
+            <div class="autocomplete-menu" id="autocomplete-html"></div>
+          </div>
         </div>
-        <textarea id="python-code" oninput="saveCode()">
-import js
+        <div class="editor-content" data-lang="css">
+          <div class="editor-wrapper">
+            <textarea id="css-code" oninput="updateWebPreview(); saveCode()">body { 
+  font-family: sans-serif; 
+  padding: 20px; 
+  background: #f5f5f5;
+}
+h1 { 
+  color: #333; 
+  margin-bottom: 20px;
+}
+button {
+  background: #007acc;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+            </textarea>
+            <div class="autocomplete-menu" id="autocomplete-css"></div>
+          </div>
+        </div>
+        <div class="editor-content" data-lang="js">
+          <div class="editor-wrapper">
+            <textarea id="js-code" oninput="updateWebPreview(); saveCode()">function draw() {
+  alert("It works!");
+}
+
+// Add more JavaScript here
+console.log("JavaScript is running!");</textarea>
+            <div class="autocomplete-menu" id="autocomplete-js"></div>
+          </div>
+        </div>
+        <div class="editor-content" data-lang="python">
+          <div class="editor-wrapper">
+            <textarea id="python-code" oninput="saveCode()" onkeydown="handleEditorKeydown(event, 'python')">import js
 
 # Get the canvas element from the DOM
 canvas = js.document.getElementById('py-canvas')
@@ -252,21 +491,42 @@ ctx.arc(200, 100, 40, 0, 6.28)
 ctx.fillStyle = 'red'
 ctx.fill()
 
-print("Canvas drawing complete!")
-            </textarea>
+print("Canvas drawing complete!")</textarea>
+            <div class="autocomplete-menu" id="autocomplete-python"></div>
+          </div>
+        </div>
+        <div class="editor-content" data-lang="sql">
+          <div class="editor-wrapper">
+            <textarea id="sql-code" oninput="saveCode()">-- SQL Query Editor
+-- Write your SQL queries here
+
+SELECT * FROM users;
+
+-- Example queries:
+-- SELECT id, name, email FROM users WHERE active = 1;
+-- INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
+-- UPDATE users SET email = 'new@example.com' WHERE id = 1;</textarea>
+            <div class="autocomplete-menu" id="autocomplete-sql"></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="preview-container">
-      <iframe id="web-frame"></iframe>
-
-      <div id="python-preview">
-        <div id="loading" class="loading-badge">Loading Python Engine...</div>
-        <h4>Canvas Output</h4>
-        <canvas id="py-canvas" width="400" height="300"></canvas>
-
-        <h4>Console Output</h4>
-        <div id="console-output">Ready to run...</div>
+    <!-- Preview Pane -->
+    <div class="preview-pane">
+      <div class="preview-header">PREVIEW</div>
+      <div class="preview-content">
+        <iframe id="web-frame"></iframe>
+        <div id="python-preview" style="display: none;">
+          <div id="loading" class="loading-badge">Loading Python Engine...</div>
+          <h4>Canvas Output</h4>
+          <canvas id="py-canvas" width="400" height="300"></canvas>
+          <h4>Console Output</h4>
+          <div id="console-output">Ready to run...</div>
+          <div class="action-bar">
+            <button class="btn-run" onclick="runPython()">▶ Run Code</button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -278,6 +538,7 @@ print("Canvas drawing complete!")
       localStorage.setItem('css-code', document.getElementById('css-code').value);
       localStorage.setItem('js-code', document.getElementById('js-code').value);
       localStorage.setItem('python-code', document.getElementById('python-code').value);
+      localStorage.setItem('sql-code', document.getElementById('sql-code').value);
     }
 
     function loadCode() {
@@ -285,38 +546,66 @@ print("Canvas drawing complete!")
       const cssStored = localStorage.getItem('css-code');
       const jsStored = localStorage.getItem('js-code');
       const pythonStored = localStorage.getItem('python-code');
+      const sqlStored = localStorage.getItem('sql-code');
 
       if (htmlStored) document.getElementById('html-code').value = htmlStored;
       if (cssStored) document.getElementById('css-code').value = cssStored;
       if (jsStored) document.getElementById('js-code').value = jsStored;
       if (pythonStored) document.getElementById('python-code').value = pythonStored;
+      if (sqlStored) document.getElementById('sql-code').value = sqlStored;
+    }
+
+    // --- LANGUAGE SWITCHING ---
+    function switchLanguage(lang) {
+      // Update sidebar
+      document.querySelectorAll('.sidebar .file-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector(`.sidebar .file-item[data-lang="${lang}"]`)?.classList.add('active');
+
+      // Update tabs
+      document.querySelectorAll('.editor-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`.editor-tab[data-lang="${lang}"]`)?.classList.add('active');
+
+      // Update editor content
+      document.querySelectorAll('.editor-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelector(`.editor-content[data-lang="${lang}"]`)?.classList.add('active');
+
+      // Update preview for web mode
+      if (['html', 'css', 'js'].includes(lang)) {
+        updateWebPreview();
+      }
     }
 
     // --- MODE SWITCHING ---
     function switchMode(mode) {
-      const webEditors = document.getElementById('web-editors');
-      const pyEditor = document.getElementById('python-editor-container');
       const webFrame = document.getElementById('web-frame');
       const pyPreview = document.getElementById('python-preview');
-      const btnWeb = document.getElementById('btn-web');
+      const btnEditor = document.getElementById('btn-editor');
       const btnPy = document.getElementById('btn-python');
+      const editorMain = document.querySelector('.editor-main');
+      const sidebar = document.querySelector('.sidebar');
 
-      if (mode === 'web') {
-        webEditors.style.display = 'flex';
-        pyEditor.style.display = 'none';
-        webFrame.style.display = 'block';
+      if (mode === 'editor') {
+        editorMain.style.display = 'flex';
         pyPreview.style.display = 'none';
-        btnWeb.classList.add('active');
+        webFrame.style.display = 'block';
+        sidebar.style.display = 'flex';
+        btnEditor.classList.add('active');
         btnPy.classList.remove('active');
-        updateWebPreview(); // Refresh web view
+        updateWebPreview();
       } else {
-        webEditors.style.display = 'none';
-        pyEditor.style.display = 'flex';
-        webFrame.style.display = 'none';
+        editorMain.style.display = 'none';
         pyPreview.style.display = 'flex';
-        btnWeb.classList.remove('active');
+        webFrame.style.display = 'none';
+        sidebar.style.display = 'none';
+        btnEditor.classList.remove('active');
         btnPy.classList.add('active');
-        initPyodide(); // Load Python if not loaded
+        initPyodide();
       }
     }
 
@@ -340,7 +629,7 @@ print("Canvas drawing complete!")
     const loadingBadge = document.getElementById('loading');
 
     async function initPyodide() {
-      if (pyodide) return; // Already loaded
+      if (pyodide) return;
 
       loadingBadge.style.display = 'block';
       outputDiv.innerText = "Initializing Python environment...\n";
@@ -348,7 +637,6 @@ print("Canvas drawing complete!")
       try {
         pyodide = await loadPyodide();
 
-        // Redirect Python print() to our HTML console div
         pyodide.setStdout({
           batched: (msg) => {
             outputDiv.innerText += msg + "\n";
@@ -356,9 +644,9 @@ print("Canvas drawing complete!")
           }
         });
 
-        outputDiv.innerText += "Python Loaded! Click 'Run Code'.\n";
+        outputDiv.innerText += "✓ Python Ready! Click 'Run Code' to execute.\n";
       } catch (err) {
-        outputDiv.innerText += "Error loading Python: " + err;
+        outputDiv.innerText += "✗ Error loading Python: " + err;
       } finally {
         loadingBadge.style.display = 'none';
       }
@@ -376,15 +664,14 @@ print("Canvas drawing complete!")
       try {
         await pyodide.runPythonAsync(code);
       } catch (err) {
-        outputDiv.innerText += "Error: " + err;
+        outputDiv.innerText += "\n✗ Error: " + err;
       }
     }
 
-    // Initialize default view
+    // Initialize
     loadCode();
     updateWebPreview();
   </script>
 
 </body>
-
 </html>
